@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automatic Image Slider</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+        }
+
+        .slider {
+            width: 50vw;
+            height: 100vh;
+            overflow: hidden;
+            border: 1px solid #ccc;
+            margin: 0;
+        }
+
+        .slides {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .slide {
+            min-width: 100%;
+            box-sizing: border-box;
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .content {
+            width: 50vw;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="slider">
+            <div class="slides">
+                <div class="slide"><img src="https://images.pexels.com/photos/2134816/pexels-photo-2134816.jpeg"
+                        alt="Image 1"></div>
+                <div class="slide"><img
+                        src="https://images.pexels.com/photos/2134823/pexels-photo-2134823.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr="
+                        alt="Image 2"></div>
+                <div class="slide"><img
+                        src="https://images.pexels.com/photos/15390906/pexels-photo-15390906/free-photo-of-artisans-sitting-in-a-workshop-and-working-on-cooper-patterned-trays.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                        alt="Image 3"></div>
+            </div>
+        </div>
+
+        <div class="content">
+            <h1 style="text-align: center;">About Us  </h1>
+            <p style="color: red;">
+                Step into a world where every piece tells a story. At CraftHaven, we showcase the finest work
+                of local artisans—from hand-carved sculptures to intricately woven textiles. Discover unique,
+                handcrafted products that blend tradition with innovation. Each creation reflects the passion and skill
+                of its maker. Explore, be inspired, and bring a touch of artistry into your life.
+
+            </p>
+            <p>
+                Our goal is to bring you closer to the wonders of our planet, showcasing breathtaking moments that you
+                can enjoy from the comfort of your home.
+                Stay tuned for more updates and feel free to explore our site for more visual delights.
+            </p>
+        </div>
+    </div>
+
+    <script src="index.js"></script>
+</body>
+
+</html>

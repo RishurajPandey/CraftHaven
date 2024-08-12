@@ -1,0 +1,52 @@
+* {
+	margin: 0;
+	padding: 0; 
+}
+body {
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center; 
+	background: #deeffb;
+}
+.icon-area {
+	display: flex;
+}
+.icon-area .icon a {
+	width: 80px;
+	height: 80px;
+	background: #fff;
+	font-size: 40px;
+	margin: 0 15px;
+	display: block;
+	line-height: 80px;
+	text-align: center;
+	border-radius: 5px;
+	position: relative;
+	border: 6px solid #fff;
+	border-radius: 50px;
+	overflow: hidden;
+	box-shadow: 15px 15px 40px rgba(0, 0, 0, 0.15);
+}
+.icon-area .icon a i {
+	position: relative;
+	color: #262626;
+	transition: 1s;
+}
+.icon-area .icon a:hover i {
+	transform: rotateY(360deg);
+	color: #fff;
+}
+.icon-area .icon a:before {
+	content: "";
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	background: linear-gradient(to bottom, #09d3f3, #0159e4);
+	left: 0;
+	top: 100%;
+	transition: 1.5s;
+}
+.icon-area .icon a:hover:before {
+	top: 0;
+}
