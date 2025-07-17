@@ -20,6 +20,6 @@ CraftHaven is a full-stack e-commerce platform built to empower local artisans b
 ## 📸 Screenshots
 
 > ```
-> ![Home Page](screenshots/home.png)
-> ![Product Page](screenshots/product.png)
+> ![Home Page](./screenshots/Home.png)
+> ![Product Page](./screenshots/Product.png)
 > ```
