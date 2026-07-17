@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 // NOTE: Frontend should use VITE_API_URL from environment for API calls.
 // Example: const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 import { Search, ShoppingCart, MapPin, User, Calendar, Star, Heart, Filter, Menu, X, Sun, Moon, Award, Truck, Shield, Clock, ChevronRight, Play, Users, TrendingUp } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 
 // The mock data remains the same, just without the TypeScript type annotations.
 const mockProducts = [
@@ -724,6 +725,7 @@ function App() {
           </div>
         </footer>
       </div>
+      <Analytics />
     </div>
   );
 }
