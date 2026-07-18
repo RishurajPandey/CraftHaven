@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-// NOTE: Frontend should use VITE_API_URL from environment for API calls.
-// Example: const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001';
-import { Search, ShoppingCart, MapPin, User, Calendar, Star, Heart, Filter, Menu, X, Sun, Moon, Award, Truck, Shield, Clock, ChevronRight, Play, Users, TrendingUp } from 'lucide-react';
+import { Search, MapPin, Calendar, Star, Heart, Filter, Award, Truck, Shield, Clock, ChevronRight, Users, TrendingUp, User } from 'lucide-react';
+import { registerUser, loginUser, API_BASE } from './api';
+import Header from './components/Header';
+import AuthModal from './components/AuthModal';
 
-// The mock data remains the same, just without the TypeScript type annotations.
 const mockProducts = [
   {
     id: 1,
@@ -140,14 +140,84 @@ const mockArtisans = [
 function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  // Removed <number[]> type annotation from useState
   const [cartItems, setCartItems] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const [showAuth, setShowAuth] = useState(false);
+  const [authMode, setAuthMode] = useState('login'); // 'login' or 'register'
+  const [authForm, setAuthForm] = useState({ name: '', email: '', password: '' });
+  const [user, setUser] = useState(null);
+  const [loadingAuth, setLoadingAuth] = useState(false);
+  const [error, setError] = useState('');
 
   const categories = ['All', 'Ceramics', 'Woodwork', 'Textiles', 'Leather', 'Glass'];
+
+  const scrollToSection = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handleFooterLink = (event, sectionId) => {
+    event.preventDefault();
+    scrollToSection(sectionId);
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch(`${API_BASE}/api/users/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then((r) => r.json())
+        .then((data) => {
+          if (data && data.success) setUser(data.data);
+        })
+        .catch(() => {
+          localStorage.removeItem('token');
+        });
+    }
+  }, []);
+
+  const handleAuthSubmit = async (e) => {
+    e.preventDefault();
+    setLoadingAuth(true);
+    setError('');
+
+    try {
+      if (authMode === 'login') {
+        const res = await loginUser({ email: authForm.email, password: authForm.password });
+        if (res && res.success && res.data && res.data.token) {
+          localStorage.setItem('token', res.data.token);
+          setUser(res.data);
+          setShowAuth(false);
+        } else {
+          setError(res.message || 'Login failed');
+        }
+      } else {
+        const res = await registerUser({ name: authForm.name, email: authForm.email, password: authForm.password });
+        if (res && res.success && res.data && res.data.token) {
+          localStorage.setItem('token', res.data.token);
+          setUser(res.data);
+          setShowAuth(false);
+        } else {
+          setError(res.message || 'Registration failed');
+        }
+      }
+    } catch (err) {
+      setError(err.message || 'An error occurred');
+    } finally {
+      setLoadingAuth(false);
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+  };
 
   useEffect(() => {
     const savedDarkMode = localStorage.getItem('darkMode') === 'true';
@@ -172,12 +242,11 @@ function App() {
 
   const featuredProducts = mockProducts.filter(product => product.featured);
 
-  // Removed type annotation from productId
+
   const addToCart = (productId) => {
     setCartItems(prev => [...prev, productId]);
   };
 
-  // Removed type annotation from productId
   const toggleFavorite = (productId) => {
     setFavorites(prev =>
       prev.includes(productId)
@@ -190,75 +259,48 @@ function App() {
     setDarkMode(!darkMode);
   };
 
+  const openAuth = (mode = 'login') => {
+    setAuthMode(mode);
+    setShowAuth(true);
+  };
+
+  const openRegister = () => {
+    openAuth('register');
+  };
+
+  const switchAuthMode = () => {
+    setAuthMode(authMode === 'login' ? 'register' : 'login');
+  };
+
   return (
     <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark' : ''}`}>
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        {/* Navigation */}
-        <nav className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-md sticky top-0 z-50 shadow-lg border-b border-orange-100 dark:border-gray-700">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-green-500 rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-xl">CH</span>
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-green-600 bg-clip-text text-transparent">
-                    CraftHaven
-                  </h1>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Local Artisan Marketplace</p>
-                </div>
-              </div>
+        <Header
+          darkMode={darkMode}
+          toggleDarkMode={toggleDarkMode}
+          cartItems={cartItems}
+          user={user}
+          logout={logout}
+          mobileMenuOpen={mobileMenuOpen}
+          setMobileMenuOpen={setMobileMenuOpen}
+          onOpenAuth={openAuth}
+          onOpenRegister={openRegister}
+          scrollToSection={scrollToSection}
+        />
 
-              <div className="hidden md:flex items-center space-x-8">
-                <a href="#" className="text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors font-medium">Home</a>
-                <a href="#" className="text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors font-medium">Artisans</a>
-                <a href="#" className="text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors font-medium">Workshops</a>
-                <a href="#" className="text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors font-medium">About</a>
-              </div>
+        <AuthModal
+          isOpen={showAuth}
+          authMode={authMode}
+          authForm={authForm}
+          setAuthForm={setAuthForm}
+          error={error}
+          loadingAuth={loadingAuth}
+          onSubmit={handleAuthSubmit}
+          onClose={() => setShowAuth(false)}
+          onSwitchMode={switchAuthMode}
+        />
 
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={toggleDarkMode}
-                  className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                >
-                  {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-                </button>
-                <button className="relative p-2 text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
-                  <ShoppingCart className="w-6 h-6" />
-                  {cartItems.length > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg">
-                      {cartItems.length}
-                    </span>
-                  )}
-                </button>
-                <button className="p-2 text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
-                  <User className="w-6 h-6" />
-                </button>
-                <button
-                  className="md:hidden p-2 text-gray-700 dark:text-gray-300"
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                >
-                  {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Mobile Menu */}
-          {mobileMenuOpen && (
-            <div className="md:hidden bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg">
-              <div className="px-4 py-3 space-y-2">
-                <a href="#" className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 rounded-lg hover:bg-orange-50 dark:hover:bg-gray-800 transition-colors">Home</a>
-                <a href="#" className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 rounded-lg hover:bg-orange-50 dark:hover:bg-gray-800 transition-colors">Artisans</a>
-                <a href="#" className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 rounded-lg hover:bg-orange-50 dark:hover:bg-gray-800 transition-colors">Workshops</a>
-                <a href="#" className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 rounded-lg hover:bg-orange-50 dark:hover:bg-gray-800 transition-colors">About</a>
-              </div>
-            </div>
-          )}
-        </nav>
-
-        {/* Hero Section */}
-        <div className="relative bg-gradient-to-r from-orange-600 via-orange-500 to-green-600 text-white overflow-hidden">
+        <div id="home" className="relative bg-gradient-to-r from-orange-600 via-orange-500 to-green-600 text-white overflow-hidden">
           <div className="absolute inset-0 bg-black/20"></div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
             <div className="text-center">
@@ -307,7 +349,6 @@ function App() {
           </div>
         </div>
 
-        {/* Stats Section */}
         <div className="bg-white dark:bg-gray-900 py-16 border-b border-gray-200 dark:border-gray-700">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -329,8 +370,7 @@ function App() {
           </div>
         </div>
 
-        {/* Featured Products */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div id="shop" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center mb-12">
             <h3 className="text-4xl font-bold text-gray-800 dark:text-white mb-4">Featured Crafts</h3>
             <p className="text-xl text-gray-600 dark:text-gray-400">Handpicked treasures from our most talented artisans</p>
@@ -399,8 +439,7 @@ function App() {
           </div>
         </div>
 
-        {/* Featured Artisan Spotlight */}
-        <div className="bg-gradient-to-r from-orange-50 to-green-50 dark:from-gray-800 dark:to-gray-900 py-20">
+        <div id="artisans" className="bg-gradient-to-r from-orange-50 to-green-50 dark:from-gray-800 dark:to-gray-900 py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h3 className="text-4xl font-bold text-center mb-16 text-gray-800 dark:text-white">Featured Artisan Spotlight</h3>
             <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 md:p-12 border border-orange-200 dark:border-gray-700">
@@ -466,7 +505,6 @@ function App() {
           </div>
         </div>
 
-        {/* Filter Section */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="flex flex-wrap items-center justify-between mb-12">
             <div>
@@ -492,7 +530,6 @@ function App() {
             </div>
           </div>
 
-          {/* Products Grid */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {filteredProducts.map(product => (
               <div key={product.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group transform hover:-translate-y-2 border border-gray-100 dark:border-gray-700">
@@ -559,8 +596,7 @@ function App() {
           </div>
         </div>
 
-        {/* Local Events Section */}
-        <div className="bg-white dark:bg-gray-900 py-20 border-t border-gray-200 dark:border-gray-700">
+        <div id="workshops" className="bg-white dark:bg-gray-900 py-20 border-t border-gray-200 dark:border-gray-700">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h3 className="text-4xl font-bold text-gray-800 dark:text-white mb-4">Upcoming Local Events</h3>
@@ -638,7 +674,7 @@ function App() {
         </div>
 
         {/* Newsletter Section */}
-        <div className="bg-gradient-to-r from-orange-600 to-green-600 py-16">
+        <div id="about" className="bg-gradient-to-r from-orange-600 to-green-600 py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h3 className="text-3xl font-bold text-white mb-4">Stay Connected with Local Artisans</h3>
             <p className="text-xl text-orange-100 mb-8">Get updates on new products, workshops, and community events</p>
@@ -688,37 +724,37 @@ function App() {
               <div>
                 <h5 className="font-bold mb-6 text-lg">Shop</h5>
                 <ul className="space-y-3 text-gray-400">
-                  <li><a href="#" className="hover:text-orange-400 transition-colors">Browse Crafts</a></li>
-                  <li><a href="#" className="hover:text-orange-400 transition-colors">Find Artisans</a></li>
-                  <li><a href="#" className="hover:text-orange-400 transition-colors">Gift Cards</a></li>
-                  <li><a href="#" className="hover:text-orange-400 transition-colors">Custom Orders</a></li>
+                  <li><button type="button" onClick={(event) => handleFooterLink(event, 'shop')} className="hover:text-orange-400 transition-colors">Browse Crafts</button></li>
+                  <li><button type="button" onClick={(event) => handleFooterLink(event, 'artisans')} className="hover:text-orange-400 transition-colors">Find Artisans</button></li>
+                  <li><button type="button" onClick={(event) => handleFooterLink(event, 'about')} className="hover:text-orange-400 transition-colors">Gift Cards</button></li>
+                  <li><button type="button" onClick={(event) => handleFooterLink(event, 'about')} className="hover:text-orange-400 transition-colors">Custom Orders</button></li>
                 </ul>
               </div>
               <div>
                 <h5 className="font-bold mb-6 text-lg">Community</h5>
                 <ul className="space-y-3 text-gray-400">
-                  <li><a href="#" className="hover:text-orange-400 transition-colors">Workshops</a></li>
-                  <li><a href="#" className="hover:text-orange-400 transition-colors">Events</a></li>
-                  <li><a href="#" className="hover:text-orange-400 transition-colors">Artisan Stories</a></li>
-                  <li><a href="#" className="hover:text-orange-400 transition-colors">Blog</a></li>
+                  <li><button type="button" onClick={(event) => handleFooterLink(event, 'workshops')} className="hover:text-orange-400 transition-colors">Workshops</button></li>
+                  <li><button type="button" onClick={(event) => handleFooterLink(event, 'workshops')} className="hover:text-orange-400 transition-colors">Events</button></li>
+                  <li><button type="button" onClick={(event) => handleFooterLink(event, 'artisans')} className="hover:text-orange-400 transition-colors">Artisan Stories</button></li>
+                  <li><button type="button" onClick={(event) => handleFooterLink(event, 'about')} className="hover:text-orange-400 transition-colors">Blog</button></li>
                 </ul>
               </div>
               <div>
                 <h5 className="font-bold mb-6 text-lg">Support</h5>
                 <ul className="space-y-3 text-gray-400">
-                  <li><a href="#" className="hover:text-orange-400 transition-colors">Help Center</a></li>
-                  <li><a href="#" className="hover:text-orange-400 transition-colors">Contact Us</a></li>
-                  <li><a href="#" className="hover:text-orange-400 transition-colors">Shipping Info</a></li>
-                  <li><a href="#" className="hover:text-orange-400 transition-colors">Returns</a></li>
+                  <li><button type="button" onClick={(event) => handleFooterLink(event, 'about')} className="hover:text-orange-400 transition-colors">Help Center</button></li>
+                  <li><button type="button" onClick={(event) => handleFooterLink(event, 'about')} className="hover:text-orange-400 transition-colors">Contact Us</button></li>
+                  <li><button type="button" onClick={(event) => handleFooterLink(event, 'about')} className="hover:text-orange-400 transition-colors">Shipping Info</button></li>
+                  <li><button type="button" onClick={(event) => handleFooterLink(event, 'about')} className="hover:text-orange-400 transition-colors">Returns</button></li>
                 </ul>
               </div>
             </div>
             <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
               <p className="text-gray-400 mb-4 md:mb-0">&copy; 2024 CraftHaven. Supporting local artisans and their communities.</p>
               <div className="flex space-x-6 text-gray-400 text-sm">
-                <a href="#" className="hover:text-orange-400 transition-colors">Privacy Policy</a>
-                <a href="#" className="hover:text-orange-400 transition-colors">Terms of Service</a>
-                <a href="#" className="hover:text-orange-400 transition-colors">Cookie Policy</a>
+                <button type="button" onClick={(event) => handleFooterLink(event, 'about')} className="hover:text-orange-400 transition-colors">Privacy Policy</button>
+                <button type="button" onClick={(event) => handleFooterLink(event, 'about')} className="hover:text-orange-400 transition-colors">Terms of Service</button>
+                <button type="button" onClick={(event) => handleFooterLink(event, 'about')} className="hover:text-orange-400 transition-colors">Cookie Policy</button>
               </div>
             </div>
           </div>

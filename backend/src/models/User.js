@@ -13,7 +13,20 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Email is required'],
       unique: true,
       lowercase: true,
-      trim: true
+      trim: true,
+      sparse: true
+    },
+    userName: {
+      type: String,
+      trim: true,
+      sparse: true,
+      default: null
+    },
+    fullName: {
+      type: String,
+      trim: true,
+      sparse: true,
+      default: null
     },
     password: {
       type: String,
