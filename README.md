@@ -1,50 +1,258 @@
 # 🛍️ CraftHaven
 
-CraftHaven is a full-stack e-commerce platform built to empower local artisans by providing them with a digital space to showcase and sell their handcrafted products.
+<p align="center">
+  <b>A Full-Stack MERN Marketplace for Handmade Products</b><br>
+  Connecting local artisans with customers through a modern, responsive e-commerce platform.
+</p>
 
-## 📌 Features
+<p align="center">
+  <img src="https://img.shields.io/badge/React-Frontend-61DAFB?logo=react" />
+  <img src="https://img.shields.io/badge/Node.js-Backend-339933?logo=node.js" />
+  <img src="https://img.shields.io/badge/Express.js-API-000000?logo=express" />
+  <img src="https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb" />
+  <img src="https://img.shields.io/badge/JWT-Authentication-orange" />
+  <img src="https://img.shields.io/badge/Vercel-Deployed-black?logo=vercel" />
+  <img src="https://img.shields.io/badge/Render-Backend-46E3B7" />
+</p>
 
-- 🖼️ Artisan product listing with images, names, and prices
-- 🛒 Add to cart and checkout functionality
-- 🔍 Filter and search through artisan-made products
-- 💡 Clean, responsive UI using modern frontend tools
-- 🌐 Scalable architecture for future backend integration
+---
 
-## 🚀 Tech Stack
+## 🌐 Live Demo
 
-- **Frontend:** HTML, CSS, JavaScript, React, Vite
-- **Styling:** Tailwind CSS
-- **State Management:** React Hooks
-- **Backend (In progress):** Node.js, Express, MongoDB
+**Frontend:** https://craft-haven-phi.vercel.app
 
-## ⚙️ Deployment (Recommended)
+**Backend API:** https://crafthaven-backend.onrender.com
 
-Quick deploy setup I recommend for a resume:
+---
 
-- Frontend: Vercel (connect GitHub, auto-deploy, supports Vite)
-- Backend: Render (connect GitHub, set env vars, health check)
-- Database: MongoDB Atlas
+## 📖 Overview
 
-Steps to deploy:
+CraftHaven is a full-stack MERN marketplace designed to support local artisans by providing an online platform to showcase and sell handcrafted products.
 
-1. Push this repo to GitHub (create a new repository and push `main`).
-2. Frontend (Vercel):
-	- Import project -> `frontend` folder
-	- Build command: `npm run build`
-	- Output directory: `dist`
-	- Set env var `VITE_API_URL` to your backend URL
-3. Backend (Render):
-	- Create a new Web Service, link this GitHub repo
-	- Root: `backend` folder
-	- Start command: `npm start`
-	- Add env vars: `MONGO_URI`, `JWT_SECRET`, `NODE_ENV=production`
-	- Health check path: `/api/health`
-4. Add secrets on GitHub if you want auto-deploys via Actions (Vercel token, etc.).
+The application features secure authentication, product management, shopping functionality, and a responsive user interface, making it a scalable foundation for a real-world e-commerce platform.
 
-Files added to help deploy: `backend/Dockerfile`, `backend/Procfile`,
-`.github/workflows/frontend-deploy.yml`, and `.github/workflows/backend-ci.yml`.
+---
 
-I can finish the GitHub push and connect Vercel/Render if you give me repo access, or I can walk you through the exact clicks to connect them — which do you prefer?
+# ✨ Features
+
+### 🔐 Authentication
+
+- User Registration
+- User Login
+- JWT Authentication
+- Password Encryption using bcrypt
+- Protected Routes
+
+### 🛍️ Product Management
+
+- Browse all products
+- View product details
+- Search products
+- Category filtering
+- Featured products
+- Complete Product CRUD API
+
+### 🛒 Shopping Experience
+
+- Add products to cart
+- Update cart quantity
+- Remove items from cart
+- Responsive shopping interface
+
+### ⚡ Backend Features
+
+- RESTful API
+- MongoDB Integration
+- Express Middleware
+- Secure Authentication
+- Error Handling
+- Environment Configuration
+
+### 🎨 User Interface
+
+- Responsive Design
+- Mobile Friendly
+- Modern React Components
+- Fast Vite Build
+- Clean UI with Tailwind CSS
+
+---
+
+# 🛠️ Tech Stack
+
+## Frontend
+
+- React
+- Vite
+- Tailwind CSS
+- JavaScript (ES6+)
+
+## Backend
+
+- Node.js
+- Express.js
+- MongoDB Atlas
+- Mongoose
+- JWT
+- bcrypt
+
+## Deployment
+
+- Frontend → Vercel
+- Backend → Render
+- Database → MongoDB Atlas
+
+---
+
+# 📂 Project Structure
+
+```text
+CraftHaven
+│
+├── frontend
+│   ├── src
+│   ├── public
+│   └── ...
+│
+├── backend
+│   ├── src
+│   │   ├── controllers
+│   │   ├── middleware
+│   │   ├── models
+│   │   ├── routes
+│   │   ├── config
+│   │   └── utils
+│   ├── server.js
+│   └── ...
+│
+└── README.md
+```
+
+---
+
+# 🚀 Running Locally
+
+## Clone Repository
+
+```bash
+git clone https://github.com/RishurajPandey/CraftHaven.git
+cd CraftHaven
+```
+
+---
+
+## Backend Setup
+
+```bash
+cd backend
+npm install
+```
+
+Create a `.env` file
+
+```env
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_secret_key
+NODE_ENV=development
+```
+
+Run the backend
+
+```bash
+npm run dev
+```
+
+---
+
+## Frontend Setup
+
+```bash
+cd frontend
+npm install
+```
+
+Create a `.env` file
+
+```env
+VITE_API_URL=http://localhost:5000
+```
+
+Run
+
+```bash
+npm run dev
+```
+
+---
+
+# 🔗 API Overview
+
+| Method | Endpoint | Description |
+|---------|----------|-------------|
+| POST | `/api/users/register` | Register user |
+| POST | `/api/users/login` | Login user |
+| GET | `/api/users/me` | Current user |
+| GET | `/api/products` | Get all products |
+| GET | `/api/products/:id` | Get product |
+| POST | `/api/products` | Create product |
+| PUT | `/api/products/:id` | Update product |
+| DELETE | `/api/products/:id` | Delete product |
+
+---
+
+# 📸 Screenshots
+
+## 🏠 Home Page
+
+![Home](./screenshots/Home.png)
+
+---
+
+## 🛍️ Product Page
+
+![Product](./screenshots/Product.png)
+
+---
+
+# 📈 Future Enhancements
+
+- Wishlist
+- Product Reviews
+- Ratings
+- Online Payments
+- Order Management
+- Admin Dashboard
+- Artisan Dashboard
+- Cloudinary Image Upload
+- Email Notifications
+
+---
+
+# 💡 Key Learnings
+
+During the development of CraftHaven, I gained practical experience in:
+
+- Building RESTful APIs using Express.js
+- MongoDB schema design with Mongoose
+- JWT-based authentication and authorization
+- Secure password hashing with bcrypt
+- Connecting React frontend with Express backend
+- Deploying full-stack MERN applications using Vercel and Render
+- Managing environment variables and production deployment
+- Structuring scalable full-stack applications
+
+---
+
+# 👨‍💻 Author
+
+**Rishuraj Pandey**
+
+GitHub: https://github.com/RishurajPandey
+
+---
+
+⭐ If you found this project interesting, consider giving it a star!
 
 ## 📸 Screenshots
 
