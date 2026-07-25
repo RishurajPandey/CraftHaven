@@ -201,20 +201,6 @@ npm run dev
 
 ---
 
-# 📸 Screenshots
-
-## 🏠 Home Page
-
-![Home](./screenshots/Home.png)
-
----
-
-## 🛍️ Product Page
-
-![Product](./screenshots/Product.png)
-
----
-
 # 📈 Future Enhancements
 
 - Wishlist
@@ -252,10 +238,18 @@ GitHub: https://github.com/RishurajPandey
 
 ---
 
+# 📸 Screenshots
+
+## 🏠 Home Page
+
+![Home](./screenshots/Home.png)
+
+---
+
+## 🛍️ Product Page
+
+![Product](./screenshots/Product.png)
+
+---
+
 ⭐ If you found this project interesting, consider giving it a star!
-
-## 📸 Screenshots
-
-
-> ![Home Page](./screenshots/Home.png)
-> ![Product Page](./screenshots/Product.png)
