@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, MapPin, Calendar, Star, Heart, Filter, Award, Truck, Shield, Clock, ChevronRight, Users, TrendingUp, User } from 'lucide-react';
 import { registerUser, loginUser, API_BASE } from './api';
 import Header from './components/Header';
 import AuthModal from './components/AuthModal';
+
 
 const mockProducts = [
   {
@@ -138,6 +139,40 @@ const mockArtisans = [
 ];
 
 function App() {
+  const statsRef = useRef(null);
+  const [startCount, setStartCount] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setStartCount(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    if (statsRef.current) {
+      observer.observe(statsRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  const getCount = (number) => {
+    if (!startCount) return 0;
+
+    const values = {
+      "500+": 500,
+      "10K+": 10000,
+      "25K+": 25000,
+      "50+": 50
+    };
+
+    return values[number] || 0;
+  };
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [cartItems, setCartItems] = useState([]);
@@ -351,7 +386,10 @@ function App() {
 
         <div className="bg-white dark:bg-gray-900 py-16 border-b border-gray-200 dark:border-gray-700">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div
+              ref={statsRef}
+              className="grid grid-cols-2 md:grid-cols-4 gap-8"
+            >
               {[
                 { number: "500+", label: "Local Artisans", icon: Users },
                 { number: "10K+", label: "Happy Customers", icon: Heart },
@@ -362,7 +400,11 @@ function App() {
                   <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-orange-500 to-green-500 rounded-xl mb-4">
                     <stat.icon className="w-6 h-6 text-white" />
                   </div>
-                  <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2">{stat.number}</div>
+                  <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+                    {stat.number.includes("K")
+                      ? `${Math.floor(getCount(stat.number) / 1000)}K+`
+                      : `${getCount(stat.number)}+`}
+                  </div>
                   <div className="text-gray-600 dark:text-gray-400">{stat.label}</div>
                 </div>
               ))}
