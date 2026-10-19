@@ -141,6 +141,7 @@ const mockArtisans = [
 function App() {
   const statsRef = useRef(null);
   const [startCount, setStartCount] = useState(false);
+  const [countProgress, setCountProgress] = useState(0);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -160,9 +161,33 @@ function App() {
     return () => observer.disconnect();
   }, []);
 
-  const getCount = (number) => {
-    if (!startCount) return 0;
+  useEffect(() => {
+    if (!startCount) return;
 
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setCountProgress(1);
+      return;
+    }
+
+    const duration = 1500;
+    let startTime;
+    let animationFrame;
+
+    const animate = (timestamp) => {
+      if (startTime === undefined) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      setCountProgress(1 - (1 - progress) ** 3);
+
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [startCount]);
+
+  const getCount = (number) => {
     const values = {
       "500+": 500,
       "10K+": 10000,
@@ -170,7 +195,7 @@ function App() {
       "50+": 50
     };
 
-    return values[number] || 0;
+    return Math.round((values[number] || 0) * countProgress);
   };
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -402,8 +427,12 @@ function App() {
                   </div>
                   <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
                     {stat.number.includes("K")
-                      ? `${Math.floor(getCount(stat.number) / 1000)}K+`
-                      : `${getCount(stat.number)}+`}
+                      ? getCount(stat.number) === 0
+                        ? '0'
+                        : `${Math.floor(getCount(stat.number) / 1000)}K+`
+                      : getCount(stat.number) === 0
+                        ? '0'
+                        : `${getCount(stat.number)}+`}
                   </div>
                   <div className="text-gray-600 dark:text-gray-400">{stat.label}</div>
                 </div>
