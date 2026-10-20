@@ -35,6 +35,34 @@
 - PUT /api/products/:id
 - DELETE /api/products/:id
 
+### Order requests
+- POST /api/orders
+
+This records a customer's contact and delivery details, the requested items, and
+an estimated total with a `pending` status. It is an order request only; it does
+not process payment, notify an artisan, or reserve inventory. The saved request
+must be followed up separately to confirm the order, delivery, and payment.
+
+Example request:
+```json
+{
+  "name": "Alex Buyer",
+  "email": "alex@example.com",
+  "phone": "555-0100",
+  "address": "123 Craft Street",
+  "notes": "Please contact me in the afternoon",
+  "items": [
+    {
+      "productId": 1,
+      "name": "Handwoven Ceramic Bowl Set",
+      "artisan": "Sarah Chen",
+      "price": 85,
+      "quantity": 2
+    }
+  ]
+}
+```
+
 ## Example Requests
 
 ### Register user

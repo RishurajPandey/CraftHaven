@@ -36,3 +36,10 @@ export async function loginUser({ email, password }) {
     body: JSON.stringify({ email, password })
   });
 }
+
+export async function submitOrderRequest(order) {
+  return requestJson('/api/orders', {
+    method: 'POST',
+    body: JSON.stringify(order)
+  });
+}

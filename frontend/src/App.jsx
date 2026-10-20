@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, MapPin, Calendar, Star, Heart, Filter, Award, Truck, Shield, Clock, ChevronRight, Users, TrendingUp, User } from 'lucide-react';
-import { registerUser, loginUser, API_BASE } from './api';
+import { Search, MapPin, Calendar, Star, Heart, Filter, Award, Truck, Shield, Clock, ChevronRight, Users, TrendingUp, User, ShoppingCart, X, Trash2, Minus, Plus, ArrowLeft, PackageCheck } from 'lucide-react';
+import { registerUser, loginUser, submitOrderRequest, API_BASE } from './api';
 import Header from './components/Header';
 import AuthModal from './components/AuthModal';
 
@@ -201,6 +201,18 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [cartItems, setCartItems] = useState([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cartView, setCartView] = useState('cart');
+  const [checkoutForm, setCheckoutForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    notes: ''
+  });
+  const [orderSubmitting, setOrderSubmitting] = useState(false);
+  const [orderError, setOrderError] = useState('');
+  const [submittedOrder, setSubmittedOrder] = useState(null);
   const [favorites, setFavorites] = useState([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
@@ -213,6 +225,16 @@ function App() {
   const [error, setError] = useState('');
 
   const categories = ['All', 'Ceramics', 'Woodwork', 'Textiles', 'Leather', 'Glass'];
+  const cartEntries = Array.from(new Set(cartItems))
+    .map((productId) => ({
+      product: mockProducts.find((item) => item.id === productId),
+      quantity: cartItems.filter((id) => id === productId).length
+    }))
+    .filter((entry) => entry.product);
+  const cartSubtotal = cartEntries.reduce(
+    (total, { product, quantity }) => total + product.price * quantity,
+    0
+  );
 
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
@@ -307,6 +329,69 @@ function App() {
     setCartItems(prev => [...prev, productId]);
   };
 
+  const setCartQuantity = (productId, quantity) => {
+    setCartItems((items) => [
+      ...items.filter((id) => id !== productId),
+      ...Array(Math.max(0, quantity)).fill(productId)
+    ]);
+  };
+
+  const openCart = () => {
+    setCartView('cart');
+    setOrderError('');
+    setIsCartOpen(true);
+  };
+
+  const closeCart = () => {
+    setIsCartOpen(false);
+    setOrderError('');
+  };
+
+  const handleOrderSubmit = async (event) => {
+    event.preventDefault();
+    setOrderSubmitting(true);
+    setOrderError('');
+
+    try {
+      const result = await submitOrderRequest({
+        ...checkoutForm,
+        items: cartEntries.map(({ product, quantity }) => ({
+          productId: product.id,
+          name: product.name,
+          artisan: product.artisan,
+          price: product.price,
+          quantity
+        }))
+      });
+      setSubmittedOrder(result.data);
+      setCartItems([]);
+      setCartView('confirmation');
+    } catch (requestError) {
+      setOrderError(requestError.message || 'Unable to submit your order request. Please try again.');
+    } finally {
+      setOrderSubmitting(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isCartOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsCartOpen(false);
+        setOrderError('');
+      }
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isCartOpen]);
+
   const toggleFavorite = (productId) => {
     setFavorites(prev =>
       prev.includes(productId)
@@ -339,6 +424,7 @@ function App() {
           darkMode={darkMode}
           toggleDarkMode={toggleDarkMode}
           cartItems={cartItems}
+          onOpenCart={openCart}
           user={user}
           logout={logout}
           mobileMenuOpen={mobileMenuOpen}
@@ -359,6 +445,260 @@ function App() {
           onClose={() => setShowAuth(false)}
           onSwitchMode={switchAuthMode}
         />
+
+        {isCartOpen && (
+          <div
+            className="fixed inset-0 z-[60] overflow-y-auto bg-orange-50 dark:bg-gray-950"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cart-page-title"
+          >
+            <div className="min-h-screen">
+              <header className="border-b border-orange-100 bg-white/95 dark:border-gray-800 dark:bg-gray-900/95">
+                <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+                  <div className="flex items-center gap-3">
+                    {cartView === 'checkout' && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCartView('cart');
+                          setOrderError('');
+                        }}
+                        aria-label="Back to cart"
+                        className="rounded-full p-2 text-gray-600 hover:bg-orange-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                      >
+                        <ArrowLeft className="h-5 w-5" />
+                      </button>
+                    )}
+                    <div>
+                      <p className="text-sm font-semibold uppercase tracking-wide text-orange-600 dark:text-orange-400">CraftHaven</p>
+                      <h1 id="cart-page-title" className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {cartView === 'confirmation' ? 'Request received' : cartView === 'checkout' ? 'Delivery details' : 'Your cart'}
+                      </h1>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={closeCart}
+                    aria-label="Close cart"
+                    className="rounded-full p-3 text-gray-600 transition hover:bg-orange-50 hover:text-orange-600 dark:text-gray-300 dark:hover:bg-gray-800"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+              </header>
+
+              <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+                {cartView === 'confirmation' ? (
+                  <section className="mx-auto max-w-2xl rounded-3xl bg-white p-8 text-center shadow-xl dark:bg-gray-900 sm:p-12">
+                    <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300">
+                      <PackageCheck className="h-8 w-8" />
+                    </div>
+                    <h2 className="mb-3 text-3xl font-bold text-gray-900 dark:text-white">Thanks, we received your request.</h2>
+                    <p className="mb-6 text-gray-600 dark:text-gray-300">
+                      Your request has been saved. No payment has been taken; availability, delivery, and payment must be confirmed separately.
+                    </p>
+                    {submittedOrder?.id && (
+                      <p className="mb-8 text-sm text-gray-500 dark:text-gray-400">
+                        Request reference: {submittedOrder.id}
+                      </p>
+                    )}
+                    <button
+                      type="button"
+                      onClick={closeCart}
+                      className="rounded-xl bg-gradient-to-r from-orange-500 to-green-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:shadow-xl"
+                    >
+                      Continue browsing
+                    </button>
+                  </section>
+                ) : cartView === 'checkout' ? (
+                  <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+                    <section className="rounded-3xl bg-white p-6 shadow-lg dark:bg-gray-900 sm:p-8">
+                      <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">Where should we deliver?</h2>
+                      <p className="mb-8 text-gray-600 dark:text-gray-400">Share your contact and delivery details. This saves an order request; availability and payment must be confirmed separately.</p>
+                      <form onSubmit={handleOrderSubmit} className="space-y-5">
+                        <div className="grid gap-5 sm:grid-cols-2">
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Full name
+                            <input
+                              required
+                              autoComplete="name"
+                              value={checkoutForm.name}
+                              onChange={(event) => setCheckoutForm({ ...checkoutForm, name: event.target.value })}
+                              className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                            />
+                          </label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Email
+                            <input
+                              required
+                              type="email"
+                              autoComplete="email"
+                              value={checkoutForm.email}
+                              onChange={(event) => setCheckoutForm({ ...checkoutForm, email: event.target.value })}
+                              className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                            />
+                          </label>
+                        </div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Phone
+                          <input
+                            required
+                            type="tel"
+                            autoComplete="tel"
+                            value={checkoutForm.phone}
+                            onChange={(event) => setCheckoutForm({ ...checkoutForm, phone: event.target.value })}
+                            className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                          />
+                        </label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Delivery address
+                          <textarea
+                            required
+                            autoComplete="street-address"
+                            rows="3"
+                            value={checkoutForm.address}
+                            onChange={(event) => setCheckoutForm({ ...checkoutForm, address: event.target.value })}
+                            className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                          />
+                        </label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Notes for the artisan (optional)
+                          <textarea
+                            rows="2"
+                            maxLength="1000"
+                            value={checkoutForm.notes}
+                            onChange={(event) => setCheckoutForm({ ...checkoutForm, notes: event.target.value })}
+                            className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                          />
+                        </label>
+                        {orderError && (
+                          <p role="alert" className="rounded-xl bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">{orderError}</p>
+                        )}
+                        <button
+                          type="submit"
+                          disabled={orderSubmitting || cartEntries.length === 0}
+                          className="w-full rounded-xl bg-gradient-to-r from-orange-500 to-green-600 px-6 py-4 font-bold text-white shadow-lg transition hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {orderSubmitting ? 'Sending request...' : 'Send order request'}
+                        </button>
+                        <p className="text-center text-xs text-gray-500 dark:text-gray-400">This is an order request, not a payment. The order, delivery, and payment details must be confirmed separately.</p>
+                      </form>
+                    </section>
+                    <aside className="h-fit rounded-3xl bg-white p-6 shadow-lg dark:bg-gray-900">
+                      <h2 className="mb-5 text-xl font-bold text-gray-900 dark:text-white">Order summary</h2>
+                      <div className="space-y-4">
+                        {cartEntries.map(({ product, quantity }) => (
+                          <div key={product.id} className="flex justify-between gap-4 text-sm">
+                            <span className="text-gray-600 dark:text-gray-300">{product.name} × {quantity}</span>
+                            <span className="font-semibold text-gray-900 dark:text-white">${(product.price * quantity).toFixed(2)}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-6 flex justify-between border-t border-gray-200 pt-5 font-bold text-gray-900 dark:border-gray-700 dark:text-white">
+                        <span>Estimated total</span>
+                        <span>${cartSubtotal.toFixed(2)}</span>
+                      </div>
+                      <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">Delivery cost and payment will be confirmed by the artisan.</p>
+                    </aside>
+                  </div>
+                ) : cartEntries.length === 0 ? (
+                  <section className="mx-auto max-w-2xl rounded-3xl bg-white p-8 text-center shadow-xl dark:bg-gray-900 sm:p-12">
+                    <ShoppingCart className="mx-auto mb-5 h-12 w-12 text-orange-500" />
+                    <h2 className="mb-3 text-2xl font-bold text-gray-900 dark:text-white">Your cart is empty</h2>
+                    <p className="mb-8 text-gray-600 dark:text-gray-400">Find something handcrafted and special from our local artisans.</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        closeCart();
+                        scrollToSection('shop');
+                      }}
+                      className="rounded-xl bg-gradient-to-r from-orange-500 to-green-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:shadow-xl"
+                    >
+                      Browse crafts
+                    </button>
+                  </section>
+                ) : (
+                  <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+                    <section className="space-y-4">
+                      {cartEntries.map(({ product, quantity }) => (
+                        <article key={product.id} className="flex flex-col gap-5 rounded-3xl bg-white p-4 shadow-lg dark:bg-gray-900 sm:flex-row sm:items-center sm:p-6">
+                          <img src={product.image} alt={product.name} className="h-36 w-full rounded-2xl object-cover sm:h-32 sm:w-36" />
+                          <div className="min-w-0 flex-1">
+                            <h2 className="text-lg font-bold text-gray-900 dark:text-white">{product.name}</h2>
+                            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Handcrafted by {product.artisan}</p>
+                            <p className="mt-3 font-bold text-orange-600 dark:text-orange-400">${product.price.toFixed(2)} each</p>
+                          </div>
+                          <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end">
+                            <div className="flex items-center gap-3 rounded-xl border border-gray-200 p-1 dark:border-gray-700">
+                              <button
+                                type="button"
+                                onClick={() => setCartQuantity(product.id, quantity - 1)}
+                                aria-label={`Decrease ${product.name} quantity`}
+                                className="rounded-lg p-2 text-gray-600 hover:bg-orange-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                              >
+                                <Minus className="h-4 w-4" />
+                              </button>
+                              <span aria-live="polite" className="min-w-6 text-center font-semibold text-gray-900 dark:text-white">{quantity}</span>
+                              <button
+                                type="button"
+                                onClick={() => setCartQuantity(product.id, quantity + 1)}
+                                aria-label={`Increase ${product.name} quantity`}
+                                className="rounded-lg p-2 text-gray-600 hover:bg-orange-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                              >
+                                <Plus className="h-4 w-4" />
+                              </button>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setCartQuantity(product.id, 0)}
+                              className="flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Remove
+                            </button>
+                          </div>
+                        </article>
+                      ))}
+                    </section>
+                    <aside className="h-fit rounded-3xl bg-white p-6 shadow-lg dark:bg-gray-900">
+                      <h2 className="mb-5 text-xl font-bold text-gray-900 dark:text-white">Order summary</h2>
+                      <div className="flex justify-between text-gray-600 dark:text-gray-300">
+                        <span>Items ({cartItems.length})</span>
+                        <span>${cartSubtotal.toFixed(2)}</span>
+                      </div>
+                      <div className="mt-5 flex justify-between border-t border-gray-200 pt-5 text-lg font-bold text-gray-900 dark:border-gray-700 dark:text-white">
+                        <span>Subtotal</span>
+                        <span>${cartSubtotal.toFixed(2)}</span>
+                      </div>
+                      <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">Delivery and payment details will be confirmed by the artisan.</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setOrderError('');
+                          setCartView('checkout');
+                        }}
+                        className="mt-6 w-full rounded-xl bg-gradient-to-r from-orange-500 to-green-600 px-6 py-4 font-bold text-white shadow-lg transition hover:shadow-xl"
+                      >
+                        Continue to checkout
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          closeCart();
+                          scrollToSection('shop');
+                        }}
+                        className="mt-3 w-full rounded-xl border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition hover:bg-orange-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
+                      >
+                        Continue shopping
+                      </button>
+                    </aside>
+                  </div>
+                )}
+              </main>
+            </div>
+          </div>
+        )}
 
         <div id="home" className="relative bg-gradient-to-r from-orange-600 via-orange-500 to-green-600 text-white overflow-hidden">
           <div className="absolute inset-0 bg-black/20"></div>

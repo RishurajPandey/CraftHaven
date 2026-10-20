@@ -11,6 +11,7 @@ function Header({
   setMobileMenuOpen,
   onOpenAuth,
   onOpenRegister,
+  onOpenCart,
   scrollToSection,
 }) {
   return (
@@ -49,7 +50,11 @@ function Header({
               {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
 
-            <button className="relative p-2 text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
+            <button
+              onClick={onOpenCart}
+              aria-label={`Open cart (${cartItems.length} items)`}
+              className="relative p-2 text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
+            >
               <ShoppingCart className="w-6 h-6" />
               {cartItems.length > 0 && (
                 <span className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg">
