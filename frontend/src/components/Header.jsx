@@ -39,7 +39,9 @@ function Header({
             <button onClick={() => scrollToSection('artisans')} className="text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors font-medium">Artisans</button>
             <button onClick={() => scrollToSection('workshops')} className="text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors font-medium">Workshops</button>
             <button onClick={() => scrollToSection('about')} className="text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors font-medium">About</button>
-            <button onClick={onOpenRegister} className="text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors font-medium">Register</button>
+            {!user && (
+              <button onClick={onOpenRegister} className="text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 transition-colors font-medium">Register</button>
+            )}
           </div>
 
           <div className="flex items-center space-x-3">
@@ -92,7 +94,9 @@ function Header({
             <button onClick={() => { setMobileMenuOpen(false); scrollToSection('artisans'); }} className="w-full text-left px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 rounded-lg hover:bg-orange-50 dark:hover:bg-gray-800 transition-colors">Artisans</button>
             <button onClick={() => { setMobileMenuOpen(false); scrollToSection('workshops'); }} className="w-full text-left px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 rounded-lg hover:bg-orange-50 dark:hover:bg-gray-800 transition-colors">Workshops</button>
             <button onClick={() => { setMobileMenuOpen(false); scrollToSection('about'); }} className="w-full text-left px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 rounded-lg hover:bg-orange-50 dark:hover:bg-gray-800 transition-colors">About</button>
-            <button onClick={() => { setMobileMenuOpen(false); onOpenRegister(); }} className="w-full text-left px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 rounded-lg hover:bg-orange-50 dark:hover:bg-gray-800 transition-colors">Register</button>
+            {!user && (
+              <button onClick={() => { setMobileMenuOpen(false); onOpenRegister(); }} className="w-full text-left px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 rounded-lg hover:bg-orange-50 dark:hover:bg-gray-800 transition-colors">Register</button>
+            )}
           </div>
         </div>
       )}
